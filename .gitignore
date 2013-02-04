@@ -1,0 +1,5 @@
+bin/*
+*.o 
+a.out 
+benchmarks/io/output-* 
+benchmarks/io/*.log 

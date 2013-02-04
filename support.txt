@@ -1,0 +1,8 @@
+Here are references to coding examples on the web that are used here.... 
+
+network/server/main.c: http://www.microhowto.info/howto/listen_for_and_accept_tcp_connections_in_c.html#idp85840
+network/client/main.c:  http://www.microhowto.info/howto/establish_a_tcp_connection_in_c.html
+network/server/daemon.c:http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#byteorder
+network/server/daemon.c:http://www.4pmp.com/2009/12/a-simple-daemon-in-c/
+
+
