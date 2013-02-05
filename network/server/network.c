@@ -19,7 +19,7 @@
 #include <signal.h>
 #include <syslog.h>
 #include <stdlib.h>
-  #include <sys/sysinfo.h>
+#include <sys/sysinfo.h>
 
 #include "defs.h"
 
