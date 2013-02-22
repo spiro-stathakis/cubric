@@ -13,7 +13,8 @@ int main(int argc , char *argv[] )
 
 	char *hostname = (argc >= 2) ? argv[1] : "localhost"; 
 	
-	char *portname = (argc == 3) ? argv[2] : "60000";
+	char *portname = (argc == 3) ? argv[2] : "cubricd"; 
+	/* 60000  by default*/ 
 	
 	
 	struct addrinfo hints;
