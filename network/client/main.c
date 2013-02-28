@@ -29,11 +29,12 @@ int main(int argc , char *argv[] )
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 100;
 
+	
     
 	int err=getaddrinfo(hostname,portname,&hints,&res);
 	if (err != 0) {
-		fprintf(stderr,"Error: %s\n",gai_strerror(errno));
-		return errno; 
+		fprintf(stderr,"Error: %s\n",gai_strerror(err));
+		return err; 
 	}
 	
 		
