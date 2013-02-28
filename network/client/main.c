@@ -24,19 +24,30 @@ int main(int argc , char *argv[] )
 	hints.ai_protocol=0;
 	hints.ai_flags=AI_ADDRCONFIG;
 	struct addrinfo* res=0;
+	
+	struct timeval timeout;      
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+
+    
 	int err=getaddrinfo(hostname,portname,&hints,&res);
 	if (err!=0) {
 		fprintf(stderr,"Error: %s\n",strerror(errno));
 		return errno; 
 		
 	}
-	int fd=socket(res->ai_family,res->ai_socktype,res->ai_protocol);
-	if (fd==-1) {
+	int sockfd=socket(res->ai_family,res->ai_socktype,res->ai_protocol);
+	
+	setsockopt (sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,sizeof(timeout)); 
+		
+	
+	
+	if (sockfd==-1) {
 		fprintf(stderr,"Error: %s\n",strerror(errno));
 		return errno; 
 	}
 
-	if (connect(fd,res->ai_addr,res->ai_addrlen)==-1) {
+	if (connect(sockfd,res->ai_addr,res->ai_addrlen)==-1) {
 		fprintf(stderr,"Error: %s\n",strerror(errno));
 		return errno; 
 	}	
@@ -46,7 +57,7 @@ int main(int argc , char *argv[] )
 	
 	char buffer[256];
 	for (;;) {
-		ssize_t count=read(fd,buffer,sizeof(buffer));
+		ssize_t count=read(sockfd,buffer,sizeof(buffer));
 		if (count<0) {
 			if (errno!=EINTR)
 			{
@@ -59,7 +70,7 @@ int main(int argc , char *argv[] )
 			write(STDOUT_FILENO,buffer,count);
 		}
 	}
-	close(fd);
+	close(sockfd);
 	
 	return 0; 
 	
