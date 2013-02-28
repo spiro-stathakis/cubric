@@ -31,10 +31,9 @@ int main(int argc , char *argv[] )
 
     
 	int err=getaddrinfo(hostname,portname,&hints,&res);
-	if (err!=0) {
-		fprintf(stderr,"Error: %s\n",strerror(errno));
+	if (err != 0) {
+		fprintf(stderr,"Error: %s\n",gai_strerror(errno));
 		return errno; 
-		
 	}
 	
 		
@@ -59,7 +58,7 @@ int main(int argc , char *argv[] )
 	
 	freeaddrinfo(res);
 	
-	char buffer[256];
+	char buffer[512];
 	for (;;) {
 		ssize_t count=read(sockfd,buffer,sizeof(buffer));
 		if (count<0) {
