@@ -26,8 +26,8 @@ int main(int argc , char *argv[] )
 	struct addrinfo* res=0;
 	
 	struct timeval timeout;      
-	timeout.tv_sec = 1;
-	timeout.tv_usec = 0;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 100;
 
     
 	int err=getaddrinfo(hostname,portname,&hints,&res);
@@ -36,19 +36,23 @@ int main(int argc , char *argv[] )
 		return errno; 
 		
 	}
+	
+		
+
 	int sockfd=socket(res->ai_family,res->ai_socktype,res->ai_protocol);
 	
-	setsockopt (sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,sizeof(timeout)); 
 		
 	
 	
 	if (sockfd==-1) {
-		fprintf(stderr,"Error: %s\n",strerror(errno));
+		fprintf(stderr,"Socket error: %s\n",strerror(errno));
 		return errno; 
 	}
 
+	setsockopt (sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,sizeof(timeout)); 
+	
 	if (connect(sockfd,res->ai_addr,res->ai_addrlen)==-1) {
-		fprintf(stderr,"Error: %s\n",strerror(errno));
+		fprintf(stderr,"Socket connect error: %s\n",strerror(errno));
 		return errno; 
 	}	
 	

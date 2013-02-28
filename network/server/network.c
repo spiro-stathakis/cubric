@@ -20,7 +20,7 @@
 #include <syslog.h>
 #include <stdlib.h>
 #include <sys/sysinfo.h>
-
+#include <sys/utsname.h>
 #include "defs.h"
 
 
@@ -36,7 +36,8 @@ int handle_session(int session_fd) {
     
 
     struct sysinfo info;
-    int temp_length = 64  , return_length = 256;
+    struct utsname kernel_info;
+    int temp_length = 64  , return_length = 512;
     char *temp_string, *ret_buffer; 
     int cpu_count =  get_nprocs(); 
     
@@ -55,13 +56,21 @@ int handle_session(int session_fd) {
            };
    */
    
-   	   
+       	   
     temp_string = malloc(temp_length); 
     ret_buffer = malloc(return_length); 
-    temp_string[0] = '\0';  
-    ret_buffer[0] = '\0';  
     
+    memset(temp_string,'\0', temp_length); 
+    memset(ret_buffer,'\0',  return_length);
+  
+   
+    
+    
+	
+	 
+	
     sysinfo(&info);
+    uname(&kernel_info);
     
     snprintf(temp_string,sizeof(char *) * temp_length , "uptime:%lu\r\n" , info.uptime); 
     strcat(ret_buffer,temp_string); 
@@ -90,8 +99,21 @@ int handle_session(int session_fd) {
     
     snprintf(temp_string, sizeof(char *) * temp_length  , "cpus:%d\r\n" , cpu_count); 
     strcat(ret_buffer,temp_string); 
-     
     
+    snprintf(temp_string, sizeof(char *) * temp_length  , "sysname:%s\r\n" , kernel_info.sysname); 
+    strcat(ret_buffer,temp_string);
+    
+    snprintf(temp_string, sizeof(char *) * temp_length  , "nodename:%s\r\n" , kernel_info.nodename); 
+    strcat(ret_buffer,temp_string);
+    
+    snprintf(temp_string, sizeof(char *) * temp_length  , "release:%s\r\n" , kernel_info.release); 
+    strcat(ret_buffer,temp_string);
+    
+    snprintf(temp_string, sizeof(char *) * temp_length  , "version:%s\r\n" , kernel_info.version); 
+    strcat(ret_buffer,temp_string);
+    
+    snprintf(temp_string, sizeof(char *) * temp_length  , "machine:%s\r\n" , kernel_info.machine); 
+    strcat(ret_buffer,temp_string);
     
     ssize_t count=write(session_fd,ret_buffer,strlen(ret_buffer));
     free(ret_buffer); 
