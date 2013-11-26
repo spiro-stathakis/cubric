@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <sys/sysinfo.h>
 #include <sys/utsname.h>
+#include <sys/ioctl.h>
 #include "defs.h"
 
 
@@ -72,26 +73,26 @@ int handle_session(int session_fd) {
     sysinfo(&info);
     uname(&kernel_info);
     
-    snprintf(temp_string,sizeof(char *) * temp_length , "uptime:%lu\r\n" , info.uptime); 
+    snprintf(temp_string,sizeof(char *) * temp_length , "uptime:%ll\r\n" , info.uptime); 
     strcat(ret_buffer,temp_string); 
    
-    snprintf(temp_string, sizeof(char *) * temp_length , "load 1:%lu\r\n" , info.loads[0]); 
+    snprintf(temp_string, sizeof(char *) * temp_length , "load 1:%ll\r\n" , info.loads[0]); 
     strcat(ret_buffer,temp_string); 
-    snprintf(temp_string, sizeof(char *) * temp_length , "load 5:%lu\r\n" , info.loads[1]); 
+    snprintf(temp_string, sizeof(char *) * temp_length , "load 5:%ll\r\n" , info.loads[1]); 
     strcat(ret_buffer,temp_string); 
-    snprintf(temp_string, sizeof(char *) * temp_length  , "load 15:%lu\r\n" , info.loads[2]); 
+    snprintf(temp_string, sizeof(char *) * temp_length  , "load 15:%ll\r\n" , info.loads[2]); 
     strcat(ret_buffer,temp_string); 
-    snprintf(temp_string, sizeof(char *) * temp_length  , "totalram:%lu\r\n" , info.totalram); 
+    snprintf(temp_string, sizeof(char *) * temp_length  , "totalram:%ll\r\n" , info.totalram); 
     strcat(ret_buffer,temp_string); 
-    snprintf(temp_string, sizeof(char *) * temp_length  , "freeram:%lu\r\n" , info.freeram); 
+    snprintf(temp_string, sizeof(char *) * temp_length  , "freeram:%ll\r\n" , info.freeram); 
     strcat(ret_buffer,temp_string); 
-    snprintf(temp_string, sizeof(char *) * temp_length  , "sharedram:%lu\r\n" , info.sharedram); 
+    snprintf(temp_string, sizeof(char *) * temp_length  , "sharedram:%ll\r\n" , info.sharedram); 
     strcat(ret_buffer,temp_string); 
-    snprintf(temp_string, sizeof(char *) * temp_length  , "bufferram:%lu\r\n" , info.bufferram); 
+    snprintf(temp_string, sizeof(char *) * temp_length  , "bufferram:%ll\r\n" , info.bufferram); 
     strcat(ret_buffer,temp_string); 
-    snprintf(temp_string, sizeof(char *) * temp_length  , "totalswap:%lu\r\n" , info.totalswap); 
+    snprintf(temp_string, sizeof(char *) * temp_length  , "totalswap:%ll\r\n" , info.totalswap); 
     strcat(ret_buffer,temp_string); 
-    snprintf(temp_string, sizeof(char *) * temp_length  , "freeswap:%lu\r\n" , info.freeswap); 
+    snprintf(temp_string, sizeof(char *) * temp_length  , "freeswap:%ll\r\n" , info.freeswap); 
     strcat(ret_buffer,temp_string); 
     
     snprintf(temp_string, sizeof(char *) * temp_length  , "procs:%d\r\n" , info.procs); 
@@ -134,12 +135,14 @@ int service_startup()
 	int err = 0; 
 	struct addrinfo hints;
 	memset(&hints,0,sizeof(hints));
-	hints.ai_family=AF_UNSPEC;
+	hints.ai_family=AF_INET;
 	hints.ai_socktype=SOCK_STREAM; /* allow tcp, exclude udp */ 
 	hints.ai_protocol=0;
 	hints.ai_flags=AI_PASSIVE|AI_ADDRCONFIG;
 	struct addrinfo* res=0;
-	
+	/* use the reuse option */ 
+	int reuseaddr=1;
+	int server_fd; 
 	
 	err=getaddrinfo(ALLOWED_HOSTS,SERVER_PORT,&hints,&res);
 	
@@ -153,7 +156,7 @@ int service_startup()
 	
 	
 	/* socket to listen for connections */ 
-	int server_fd=socket(res->ai_family,res->ai_socktype,res->ai_protocol);
+	server_fd=socket(res->ai_family,res->ai_socktype,res->ai_protocol);
 	
 	if (server_fd==-1)
 	{
@@ -164,15 +167,21 @@ int service_startup()
 	
 	 
 	
-	/* use the reuse option */ 
-	int reuseaddr=1;
+	
 	if (setsockopt(server_fd,SOL_SOCKET,SO_REUSEADDR,&reuseaddr,sizeof(reuseaddr)) == -1 )
 	{
 	    syslog(LOG_INFO, "Could not get setsockopt()");
             exit(EXIT_FAILURE); 
 			
 	} 
-	 
+	
+	err = ioctl(server_fd,FIONBIO,&reuseaddr); 
+	if (err < 0)
+	{
+		 syslog(LOG_INFO, "Could not get ioctl()");
+		 exit(EXIT_FAILURE);
+	} 
+	
 	if (bind(server_fd,res->ai_addr,res->ai_addrlen) == -1)
 	{
 	    syslog(LOG_INFO, "Could not get bind()");
